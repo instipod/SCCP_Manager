@@ -11,7 +11,7 @@ if (!$db->getAll('SHOW COLUMNS FROM sccpdevmodel WHERE FIELD = "loadimage"')) {
     `vendor` varchar(40) DEFAULT '',
     `dns` int(2) DEFAULT '1',
     `buttons` int(2) DEFAULT '0',
-    `loadimage' varchar(40) DEFAULT '',
+    `loadimage` varchar(40) DEFAULT '',
     PRIMARY KEY (`model`),
     KEY `model` (`model`)
     ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
@@ -23,7 +23,7 @@ if (!$db->getAll('SHOW COLUMNS FROM sccpdevmodel WHERE FIELD = "loadimage"')) {
 }
 
 if (!$db->getAll('SHOW COLUMNS FROM sccpdevmodel WHERE FIELD = "loadinformationid"')) {
-    $sql = "ALTER TABLE 'sccpdevmodel' ADD loadinformationid charchar(30);";
+    $sql = "ALTER TABLE 'sccpdevmodel' ADD loadinformationid varchar(30);";
     $check = $db->query($sql);
     if(DB::IsError($check)) {
 	die_freepbx("Can not add loadinformationid into sccpdevmodel table\n");
