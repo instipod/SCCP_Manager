@@ -763,80 +763,16 @@ function sccp_get_tftp($tftpdisplay) {
 function sccp_edit_tftp($tftpdisplay,$tftpData) {
     global $db;
 
-    $filename = "/tftpboot/$tftpdisplay.cnf.xml";
-    $tftpfile = file_get_contents($inputfile);
-//
-// I know this look crazy, but we pull the "<Default>" tags from the
-// XMLDefault.cnf.xml file to create a template of a new file. If the 
-// file exists, we don't screw with it.
-//
-    if (strlen($tftpfile) < 24) {
-	$inputfile = "/tftpboot/SEP-Master.cnf.xml";
-	$tftpfile = file_get_contents($inputfile);
+    try {
+    	unlink("/tftpboot/".$tftpdisplay.".cnf.xml");
+    } catch (Exception $ex) {
+    	
     }
-
-    $xml = simplexml_load_string($tftpfile);
-    $json = json_encode($xml);
-    $confData = json_decode($json,TRUE);
-
-//
-// At this point, we have all the data in the system.
-//
-    $confData['devicePool']['callManagerGroup']['members']['member']['callManager']["ports"]["ethernetPhonePort"] = $tftpData['port'];
-    $confData['devicePool']['callManagerGroup']['members']['member']['@attributes']['priority'] = "0";
-    $confData['devicePool']['callManagerGroup']['members']['member']['callManager']["processNodeName"] = $tftpData['bindaddr'];
-
-    $confData['versionStamp'] = $tftpData['versionStamp']; 
-    $confData['loadInformation'] = $tftpData['loadInformation'];
-    $addonidx = $devData['addonidx'];
-    if ($tftpdisplay != 'XMLDefault') {
-	if (is_numeric($addonidx) && $addonidx < 1) {
-	    unset($confData["addOnModules"]);
-	}
-	if (is_numeric($addonidx) && $addonidx == 1) {
-	    $confData["addOnModules"]["addOnModule"]['@attributes']["idx"] = "1";
-	    $confData["addOnModules"]["addOnModule"]["loadInformation"] = $tftpData['module_loadinfo'];
-	}
-	if (is_numeric($addonidx) && $addonidx == 2) {
-	    $confData["addOnModules"]["addOnModule"]['@attributes']["idx"] = "2";
-	    $confData["addOnModules"]["addOnModule"]["loadInformation"] = $tftpData['module_loadinfo'];
-	}
-    } else {
-	unset($confData["addOnModules"]);
-	unset($confData["loadInformation"]);
+    try {
+    	copy("/tftpboot/SEPXML.txt", "/tftpboot/".$tftpdisplay.".cnf.xml");
+    } catch (Exception $ex) {
+    	die_freepbx("Error creating a CONF file!\n\n".var_dump($ex, true));
     }
-    $confData['userLocale']['name'] = $tftpData['locale_name'];
-    $confData['userLocale']['langCode'] = $tftpData['locale_code'];
-    $confData['directoryURL'] = $tftpData['directoryURL'];
-    $confData['idleTimeout'] = $tftpData['idleTimeout'];
-    $confData['idleURL'] = $tftpData['idleURL'];
-    $confData['proxyServerURL'] = $tftpData['proxyServerURL'];
-    $confData['servicesURL'] = $tftpData['servicesURL'];
-    $confData['autoSelectLineEnable'] = $tftpData['autoSelectLineEnable'];
-    $confData['autoCallSelect'] = $tftpData['autoCallSelect'];
-
-    if ($tftpdisplay == 'XMLDefault') {
-	$res = mysql_query("SELECT vendor, model, loadimage, loadinformationid
-			FROM sccpdevmodel
-			WHERE loadinformationid IS NOT NULL 
-			AND loadimage IS NOT NULL
-			ORDER BY loadinformationid ");
-			
-	while ($row = mysql_fetch_row($res)) {
-	    $vendor = $row[0];
-	    $model = $row[1];
-	    $model = preg_replace('/(,.*)/','',$model);
-	    $loadimage = $row[2];
-	    $loadinfo = $row[3];
-	    $confData[$loadinfo] = array('@attributes' => array('model' => "$vendor $model"), '@value' => "$loadimage");
-	}
-	$xml = Array2XML::createXML('default', $confData);
-    } else {
-	$xml = Array2XML::createXML('device', $confData);
-    }
-    $outfile = $xml->saveXML();
-    file_put_contents($filename, $outfile);
-    chmod ($filename,0666);
 
     return;
 }
