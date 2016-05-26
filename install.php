@@ -23,7 +23,7 @@ if (!$db->getAll('SHOW COLUMNS FROM sccpdevmodel WHERE FIELD = "loadimage"')) {
 }
 
 if (!$db->getAll('SHOW COLUMNS FROM sccpdevmodel WHERE FIELD = "loadinformationid"')) {
-    $sql = "ALTER TABLE 'sccpdevmodel' ADD loadinformationid varchar(30);";
+    $sql = "ALTER TABLE `sccpdevmodel` ADD `loadinformationid` varchar(30);";
     $check = $db->query($sql);
     if(DB::IsError($check)) {
 	die_freepbx("Can not add loadinformationid into sccpdevmodel table\n");
